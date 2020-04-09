@@ -1,21 +1,27 @@
 from app import tanutich
 from app.forms import Registr
 from flask import request, redirect, render_template, jsonify, json
-from flask_login import login_required
+# from flask_login import login_required
 from app.models import User
 from app import db
+from werkzeug.security import generate_password_hash, check_password_hash
+
 
 @tanutich.route('/', methods=['GET', 'POST'])
 def main():
     return render_template('main.html')
-
 
 @tanutich.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        print(username, password)
+
+        query_user = User.query.filter(User.username == username).first()
+        if query_user is not None:
+            query_password = User.query.filter(User.username == username).with_entities(User.password).first()[0]
+            if check_password_hash(query_password, password):
+                print('Логин')
         return jsonify(status='success')
     return render_template('login.html')
 
@@ -25,7 +31,6 @@ def register():
         username = request.form['username']
         password = request.form['password']
         repeat_password = request.form['repeat_password']
-        print(username, password, repeat_password)
 
         validate_username = User.query.filter(User.username == username).first()
 
@@ -48,10 +53,10 @@ def register():
         else:
             user_id = max_id + 1
 
-        print(json_answer)
-        # user = User(id=user_id, username=username, password=password)
-        # db.session.add(user)
-        # db.session.commit()
+        if len(json_answer['username']) == 0 and len(json_answer['password']) == 0:
+            user = User(id=user_id, username=username, password=generate_password_hash(password))
+            db.session.add(user)
+            db.session.commit()
 
         return json.dumps(json_answer)
     return render_template('register.html')
