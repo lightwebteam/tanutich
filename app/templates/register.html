@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div class="login-container">
+        <input type="text" id="username">
+        <div class="err_dublicate_username" style="display: none">Такой username уже есть</div>
+        <input type="text" id="password">
+        <div class="err_short_password" style="display: none">Длина не менее 6 символов</div>
+        <input type="text" id="repeat_password">
+        <div class="err_repeat_password" style="display: none">Несоответствие паролей</div>
+        <button type="button" onclick="submit_login()">Регистрация</button>
+    </div>
+    <script>
+        function submit_login() {
+            let username = $('#username').val();
+            let password = $('#password').val();
+            let repeat_password = $('#repeat_password').val();
+            $.ajax({
+                'type': 'POST',
+                'url': '/register',
+                'data': {
+                    'username': username,
+                    'password': password,
+                    'repeat_password': repeat_password
+                },
+                success: function (response) {
+                    let json = jQuery.parseJSON(response);
+                    if (json.username.length === 0 && json.password.length === 0) {
+                        document.location.href = '/login';
+                        return false
+                    }
+
+                    if (json.username.length === 0) {$('.err_dublicate_username').hide()}
+                    let password = $('#password').val();
+                    if (password.length >= 6) {$('.err_short_password').hide()}
+                    if (password === $('#repeat_password').val()) {$('.err_repeat_password').hide()}
+                    for (let i=0; i<json.username.length; i++) {
+                        if (json.username[i] === 'dublicate_username'){
+                            $('.err_dublicate_username').show()
+                        }
+                    }
+                    for (let i=0; i<json.password.length; i++) {
+                        if (json.password[i] === 'short_password'){
+                            $('.err_short_password').show()
+                        }
+                        if (json.password[i] === 'wrong_repeat_password'){
+                            $('.err_repeat_password').show()
+                        }
+                    }
+                },
+                error: function (error) {
+                    console.log(error)
+                }
+            })
+        }
+    </script>
+{% endblock %}

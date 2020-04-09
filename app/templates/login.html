@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div class="login-container">
+        <input type="text" id="username">
+        <input type="text" id="password">
+        <button type="button" onclick="submit_login()">Войти</button>
+    </div>
+    <script>
+        function submit_login() {
+            let username = $('#username').val();
+            let password = $('#password').val();
+            $.ajax({
+                'type': 'POST',
+                'url': '/login',
+                'data': {
+                    'username': username,
+                    'password': password
+                },
+                success: function (response) {
+                    console.log(response)
+                },
+                error: function (error) {
+                    console.log(error)
+                }
+            })
+        }
+    </script>
+{% endblock %}
